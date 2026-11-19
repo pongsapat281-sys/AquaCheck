@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AquaCheck – คลีนและวิเคราะห์ค่าน้ำเสีย</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#eef2f4;--sf:#fff;--ink:#12303d;--mut:#5d7480;--ln:#d5dfe4;--side:#12303d;--sideink:#cfe3ea;--ac:#0f8b8d;--ok:#1f9d63;--bad:#d9542c;--warn:#b57a0a;--okbg:#e2f4ea;--badbg:#fbe6de;--wbg:#fbf0d4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1a21;--sf:#15262f;--ink:#e3eef2;--mut:#8ca5b0;--ln:#264049;--side:#091218;--ac:#3fc1c3;--ok:#4cc88a;--bad:#f27d56;--warn:#f0b84a;--okbg:#17372a;--badbg:#42241a;--wbg:#3d3216}}
+:root[data-theme="dark"]{--bg:#0d1a21;--sf:#15262f;--ink:#e3eef2;--mut:#8ca5b0;--ln:#264049;--side:#091218;--ac:#3fc1c3;--ok:#4cc88a;--bad:#f27d56;--warn:#f0b84a;--okbg:#17372a;--badbg:#42241a;--wbg:#3d3216}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "IBM Plex Sans Thai",system-ui,sans-serif;display:flex;min-height:100vh}
+aside{width:230px;flex:none;background:var(--side);color:var(--sideink);padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+.brand{font-weight:700;font-size:19px;color:#fff;padding:0 10px 4px}
+.sub{font-size:12px;padding:0 10px 18px;opacity:.7}
+aside a{display:block;padding:9px 12px;border-radius:8px;color:inherit;text-decoration:none;font-size:14px}
+aside a.on{background:#ffffff1f;color:#fff;font-weight:600}
+aside a.dis{opacity:.4;pointer-events:none}
+aside .grp{font-size:12px;opacity:.55;padding:14px 12px 4px}
+main{flex:1;min-width:0;padding:28px 34px 50px;max-width:1280px}
+h1{font-size:25px;margin:0 0 4px}
+.lead{color:var(--mut);margin:0 0 18px;max-width:75ch}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:18px 20px}
+.row{display:grid;gap:16px;margin-bottom:16px}
+.c4{grid-template-columns:repeat(4,1fr)}.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:repeat(3,1fr)}
+.big{font-size:30px;font-weight:700;line-height:1.15}
+.mut{color:var(--mut);font-size:13px}
+.drop{display:block;border:2px dashed var(--ac);border-radius:14px;padding:44px 20px;text-align:center;background:var(--sf);cursor:pointer}
+.drop:hover{background:var(--okbg)}
+button{font:inherit;background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;font-weight:600}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--ln)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+select,input[type=date],input[type=number]{font:inherit;padding:7px 10px;border-radius:8px;background:var(--sf);color:var(--ink);border:1px solid var(--ln);max-width:100%}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ln);white-space:nowrap}
+th{color:var(--mut);font-weight:500}
+.wrap{overflow-x:auto}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;background:var(--ln);color:var(--mut)}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.warn{background:var(--wbg);color:var(--warn)}
+.std{display:flex;gap:12px;align-items:flex-start;padding:16px;border:1.5px solid var(--ln);border-radius:12px;background:var(--sf);cursor:pointer;margin-bottom:12px}
+.std.sel{border-color:var(--ac);box-shadow:0 0 0 3px #0f8b8d33}
+.std input{margin-top:5px;accent-color:var(--ac)}
+.bar{height:8px;border-radius:5px;background:var(--ln);overflow:hidden}.bar i{display:block;height:100%}
+svg text{fill:var(--mut);font:11px "IBM Plex Sans Thai",sans-serif}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{background:var(--sf);color:var(--ink);border:1px solid var(--ln);padding:6px 14px}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.tabs b{color:var(--bad);margin-left:4px}
+.foot{display:flex;gap:10px;margin-top:18px;align-items:center;flex-wrap:wrap}
+.filters{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding:12px 16px}
+.filters label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+.alert{background:var(--badbg);border:1px solid var(--bad);color:var(--ink);border-radius:12px;padding:14px 18px;margin-bottom:16px}
+.alert.okk{background:var(--okbg);border-color:var(--ok)}
+.alist{max-height:280px;overflow:auto;margin-top:8px}
+.mrow{display:grid;grid-template-columns:minmax(150px,1fr) minmax(160px,1.2fr);gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--ln)}
+.err{color:var(--bad);font-weight:600}
+@media(max-width:900px){body{flex-direction:column}aside{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap}.grp,.sub{display:none}main{padding:20px 16px}.c4,.c3,.c2{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<aside>
+<div class="brand">AquaCheck</div><div class="sub">คลีนและวิเคราะห์ค่าน้ำเสีย</div>
+<div class="grp">เตรียมข้อมูล</div>
+<a href="#upload" data-r="upload">1. นำเข้าไฟล์</a>
+<a href="#map" data-r="map">2. จับคู่คอลัมน์</a>
+<a href="#clean" data-r="clean">3. ผลการคลีน</a>
+<a href="#standard" data-r="standard">4. เลือกมาตรฐาน</a>
+<div class="grp">แดชบอร์ด</div>
+<a href="#overview" data-r="overview">ภาพรวม</a>
+<a href="#trends" data-r="trends">แนวโน้มและแจ้งเตือน</a>
+<a href="#compliance" data-r="compliance">ผลเทียบมาตรฐาน</a>
+<div style="flex:1"></div>
+<button class="ghost" id="theme" style="color:var(--sideink);border-color:#ffffff33">สลับโหมดมืด/สว่าง</button>
+</aside>
+<main id="app"></main>
+<script>
+const wb=x=>new RegExp("(^|[^a-z])"+x+"([^a-z]|$)","i");
+const P={
+pH:{n:"ความเป็นกรด-ด่าง",u:"",re:/(^|[^a-z])ph([^a-z]|$)|กรด/i},
+DO:{n:"ออกซิเจนละลายน้ำ",u:"mg/L",re:/(^|[^a-z])do([^a-z]|$)|oxygen|ออกซิเจน/i},
+EC:{n:"ความนำไฟฟ้า",u:"µS/cm",re:/(^|[^a-z])ec([^a-z]|$)|conductiv|นำไฟฟ้า/i},
+Sal:{n:"ความเค็ม",u:"g/L",re:/salin|เค็ม/i},
+Temp:{n:"อุณหภูมิ",u:"°C",re:/temp|อุณหภูมิ/i},
+Turb:{n:"ความขุ่น",u:"NTU",re:/turb|ขุ่น/i},
+BOD:{n:"บีโอดี",u:"mg/L",re:/(^|[^a-z])bod([^a-z]|$)|บีโอดี/i},
+COD:{n:"ซีโอดี",u:"mg/L",re:/(^|[^a-z])cod([^a-z]|$)|ซีโอดี/i},
+TSS:{n:"ของแข็งแขวนลอย",u:"mg/L",re:/tss|suspended|แขวนลอย/i},
+TDS:{n:"ของแข็งละลายน้ำ",u:"mg/L",re:/tds|dissolved solid|สารละลาย/i},
+Oil:{n:"น้ำมันและไขมัน",u:"mg/L",re:/oil|grease|น้ำมัน/i},
+TKN:{n:"ไนโตรเจนทั้งหมด (TKN)",u:"mg/L",re:/tkn|kjeldahl|ไนโตรเจน/i}};
+const K=Object.keys(P);
+// ค่าเกณฑ์ [ต่ำสุด, สูงสุด] เป็นตัวอย่างสาธิต ตรวจกับประกาศล่าสุดก่อนใช้จริง
+const S={
+ind:{n:"น้ำทิ้งโรงงานอุตสาหกรรม (ไทย)",d:"เกณฑ์ระบายน้ำทิ้งจากโรงงาน",L:{pH:[5.5,9],BOD:[null,20],COD:[null,120],TSS:[null,50],TDS:[null,3000],Oil:[null,5],TKN:[null,100]}},
+bld:{n:"น้ำทิ้งจากอาคาร (ไทย)",d:"อาคารที่ต้องบำบัดน้ำเสียก่อนระบาย",L:{pH:[5,9],BOD:[null,20],TSS:[null,50],Oil:[null,20],TKN:[null,35]}},
+srf:{n:"แหล่งน้ำผิวดิน ประเภท 3",d:"ใช้ประเมินคุณภาพน้ำในแม่น้ำและคลอง",L:{pH:[5,9],DO:[4,null],BOD:[null,2]}},
+cus:{n:"กำหนดเกณฑ์เอง",d:"ใส่ค่าต่ำสุดและสูงสุดเอง เช่น EC หรือความเค็ม",L:{}}};
+const st={tbl:null,map:{},rows:null,rep:null,std:"srf",pm:"DO",f:{site:"",from:"",to:""},sites:[],avail:[],dedupe:true};
+const app=document.getElementById("app"),$=q=>document.querySelector(q);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(x,d=1)=>x==null||isNaN(x)?"–":(+x).toLocaleString("en",{minimumFractionDigits:d,maximumFractionDigits:d});
+const pad=n=>(n<10?"0":"")+n;
+const dmy=d=>d.slice(8,10)+"/"+d.slice(5,7)+"/"+d.slice(0,4);
+const csvq=s=>/[",\n]/.test(s)?'"'+String(s).replace(/"/g,'""')+'"':s;
+
+function save(name,text){
+ const fb=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+text],{type:"text/csv"}));a.download=name;document.body.appendChild(a);a.click();a.remove()};
+ if(window.claude&&window.claude.use)window.claude.use("downloads").then(d=>d?d.save({filename:name,data:"\uFEFF"+text}).catch(()=>{}):fb()).catch(fb);else fb();
+}
+function parseTable(t){
+ t=t.replace(/^\uFEFF/,"");
+ const first=t.split(/\r?\n/,1)[0],dl=[",",";","\t","|"].map(d=>[d,first.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+ const rows=[];let row=[],cur="",q=false;
+ const push=()=>{row.push(cur);cur="";if(row.some(x=>x.trim()))rows.push(row);row=[]};
+ for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c=='"'){if(t[i+1]=='"'){cur+='"';i++}else q=false}else cur+=c}
+  else if(c=='"')q=true;
+  else if(c==dl){row.push(cur);cur=""}
+  else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;push()}
+  else cur+=c}
+ if(cur||row.length)push();
+ if(!rows.length)return null;
+ return {head:rows[0].map(s=>s.trim()),rows:rows.slice(1),dl};
+}
+const MON=[["มค","มกราคม","jan"],["กพ","กุมภาพันธ์","feb"],["มีค","มีนาคม","mar"],["เมย","เมษายน","apr"],["พค","พฤษภาคม","may"],["มิย","มิถุนายน","jun"],["กค","กรกฎาคม","jul"],["สค","สิงหาคม","aug"],["กย","กันยายน","sep"],["ตค","ตุลาคม","oct"],["พย","พฤศจิกายน","nov"],["ธค","ธันวาคม","dec"]];
+function pd(s){
+ s=String(s||"").trim();if(!s)return null;let m,y,mo,d,h=0,mi=0;
+ if(/^\d{5}(\.\d+)?$/.test(s)){const dt=new Date(Math.round((+s-25569)*864e5));y=dt.getUTCFullYear();mo=dt.getUTCMonth()+1;d=dt.getUTCDate();h=dt.getUTCHours();mi=dt.getUTCMinutes()}
+ else if(m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T]+(\d{1,2}):(\d{2}))?/)){y=+m[1];mo=+m[2];d=+m[3];h=+(m[4]||0);mi=+(m[5]||0)}
+ else if(m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})(?:[ T,]+(\d{1,2})[:.](\d{2}))?/)){d=+m[1];mo=+m[2];y=+m[3];h=+(m[4]||0);mi=+(m[5]||0)}
+ else if(m=s.match(/^(\d{1,2})\s*([A-Za-zก-๙][A-Za-zก-๙.\s]*?)\s*(\d{4})(?:[ T,]+(\d{1,2})[:.](\d{2}))?/)){const k=m[2].replace(/[.\s]/g,"").toLowerCase(),i=MON.findIndex(a=>a.some(x=>k==x||(/^[a-z]{3,}$/.test(k)&&x==k.slice(0,3))));if(i<0)return null;d=+m[1];mo=i+1;y=+m[3];h=+(m[4]||0);mi=+(m[5]||0)}
+ else return null;
+ if(y>2400)y-=543;
+ if(mo<1||mo>12||d<1||d>31)return null;
+ return {d:y+"-"+pad(mo)+"-"+pad(d),t:pad(h)+":"+pad(mi),ts:Date.UTC(y,mo-1,d,h,mi)};
+}
+function auto(head){
+ const M={},used={};
+ const set=(f,re)=>{const i=head.findIndex((h,j)=>!used[j]&&re.test(h));if(i>=0){M[f]=i;used[i]=1}else M[f]=-1};
+ set("time",/^\s*(time|เวลา)\s*$/i);
+ set("date",/date|วัน|stamp/i);if(M.date<0)set("date",/time|เวลา/i);
+ set("site",/station|site|สถานี|ชื่อ|name|point|จุด/i);
+ K.forEach(k=>set(k,P[k].re));
+ return M;
+}
+function runClean(){
+ const T=st.tbl,M=st.map,r={total:T.rows.length,dup:0,badDate:0,empty:0,neg:0},seen={},out=[];
+ T.rows.forEach(c=>{
+  let ds=M.date>=0?c[M.date]:"";if(M.time>=0&&c[M.time]&&String(ds).indexOf(":")<0)ds+=" "+c[M.time];
+  const p=pd(ds);if(!p){r.badDate++;return}
+  const o={site:((M.site>=0&&c[M.site])||"").trim()||"ไม่ระบุ",d:p.d,t:p.t,ts:p.ts};let has=false;
+  K.forEach(k=>{const v=M[k]>=0?parseFloat(String(c[M[k]]).replace(/,/g,"")):NaN;
+   if(isNaN(v)){o[k]=null;return}
+   if(v<0&&k!="Temp"){o[k]=null;r.neg++;return}
+   o[k]=v;has=true});
+  if(!has){r.empty++;return}
+  if(st.dedupe){const key=o.site+"|"+o.ts+"|"+K.map(k=>o[k]).join("|");if(seen[key]){r.dup++;return}seen[key]=1}
+  out.push(o)});
+ out.sort((a,b)=>a.ts-b.ts);r.kept=out.length;
+ st.rows=out;st.rep=r;st.sites=[...new Set(out.map(o=>o.site))];
+ st.avail=K.filter(k=>out.some(o=>o[k]!=null));
+ st.f={site:"",from:out.length?out[0].d:"",to:out.length?out[out.length-1].d:""};st.lo=st.f.from;st.hi=st.f.to;
+ if(!st.avail.includes(st.pm))st.pm=st.avail[0];
+}
+const lim=k=>{const l=S[st.std].L[k];return !l||(l[0]==null&&l[1]==null)?null:l};
+const evalP=(k,v)=>{const l=lim(k);if(!l||v==null)return null;return !((l[0]!=null&&v<l[0])||(l[1]!=null&&v>l[1]))};
+const limTxt=k=>{const l=lim(k);return !l?"ไม่กำหนด":l[0]!=null&&l[1]!=null?l[0]+" – "+l[1]:l[1]!=null?"≤ "+l[1]:"≥ "+l[0]};
+const view=()=>st.rows.filter(o=>(!st.f.site||o.site==st.f.site)&&o.d>=st.f.from&&o.d<=st.f.to);
+function stats(k,rows){let n=0,s=0,mn=Infinity,mx=-Infinity,ex=0;rows.forEach(o=>{const v=o[k];if(v==null)return;n++;s+=v;if(v<mn)mn=v;if(v>mx)mx=v;if(evalP(k,v)===false)ex++});return n?{n,mean:s/n,min:mn,max:mx,ex,pct:ex/n*100}:null}
+function alerts(k,rows){const l=lim(k);if(!l)return[];const m={};
+ rows.forEach(o=>{const v=o[k];if(v==null||evalP(k,v)!==false)return;
+  const a=m[o.d]||(m[o.d]={d:o.d,n:0,w:v,dev:0,sites:{}});a.n++;
+  const dev=Math.max(l[1]!=null?v-l[1]:-Infinity,l[0]!=null?l[0]-v:-Infinity);if(dev>=a.dev){a.dev=dev;a.w=v}a.sites[o.site]=1});
+ return Object.values(m).sort((a,b)=>a.d<b.d?-1:1)}
+function series(k,rows,day){
+ const v=rows.filter(o=>o[k]!=null);
+ if(!day&&v.length<=800)return v.map(o=>({x:o.ts,v:o[k],ex:evalP(k,o[k])===false}));
+ const m={};v.forEach(o=>{const a=m[o.d]||(m[o.d]={s:0,n:0,ex:false,x:Date.parse(o.d+"T00:00:00Z")});a.s+=o[k];a.n++;if(evalP(k,o[k])===false)a.ex=true});
+ return Object.keys(m).sort().map(d=>({x:m[d].x,v:m[d].s/m[d].n,ex:m[d].ex}));
+}
+const fx=(x,sx)=>{const s=new Date(x).toISOString();return sx<3*864e5?s.slice(8,10)+"/"+s.slice(5,7)+" "+s.slice(11,16):s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(2,4)};
+function chart(pts,k,w,h,mini){
+ if(!pts.length)return '<div class="mut" style="padding:28px 0">ไม่มีข้อมูลของพารามิเตอร์นี้ในช่วงที่เลือก</div>';
+ const l=lim(k),g=mini?{l:4,r:4,t:6,b:6}:{l:48,r:14,t:12,b:26};
+ let lo=pts.reduce((a,p)=>Math.min(a,p.v),Infinity),hi=pts.reduce((a,p)=>Math.max(a,p.v),-Infinity);
+ if(l){if(l[0]!=null)lo=Math.min(lo,l[0]);if(l[1]!=null)hi=Math.max(hi,l[1])}
+ const sp=(hi-lo)||1;lo-=sp*.08;hi+=sp*.08;
+ const x0=pts[0].x,sx=(pts[pts.length-1].x-x0)||1;
+ const X=x=>g.l+(x-x0)/sx*(w-g.l-g.r),Y=v=>h-g.b-(v-lo)/(hi-lo)*(h-g.t-g.b);
+ let s=`<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="กราฟ ${k}">`;
+ if(!mini){
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Y(v);s+=`<line x1="${g.l}" x2="${w-g.r}" y1="${y}" y2="${y}" stroke="var(--ln)"/><text x="${g.l-6}" y="${y+4}" text-anchor="end">${fmt(v,hi-lo<10?2:0)}</text>`}
+  for(let i=0;i<=3;i++){const x=x0+sx*i/3;s+=`<text x="${X(x)}" y="${h-6}" text-anchor="${i==0?"start":i==3?"end":"middle"}">${fx(x,sx)}</text>`}}
+ if(l)l.forEach(v=>{if(v!=null)s+=`<line x1="${g.l}" x2="${w-g.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--bad)" stroke-dasharray="6 4" stroke-width="1.4"/>`});
+ s+=`<polyline fill="none" stroke="var(--ac)" stroke-width="${mini?1.5:1.8}" stroke-linejoin="round" points="${pts.map(p=>X(p.x).toFixed(1)+","+Y(p.v).toFixed(1)).join(" ")}"/>`;
+ if(!mini)pts.forEach(p=>{if(p.ex)s+=`<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3.4" fill="var(--bad)"><title>${fx(p.x,0)}: ${fmt(p.v,2)}</title></circle>`});
+ return s+"</svg>";
+}
+const pill=(k,s)=>!lim(k)?'<span class="pill">ไม่มีเกณฑ์</span>':s.ex==0?'<span class="pill ok">ผ่านทุกค่า</span>':`<span class="pill ${s.pct<5?"warn":"bad"}">เกินเกณฑ์ ${fmt(s.pct,1)}%</span>`;
+const title=(t,l)=>`<h1>${t}</h1><p class="lead">${l}</p>`;
+const opts=(arr,cur)=>arr.map(([v,t])=>`<option value="${esc(v)}"${v==cur?" selected":""}>${esc(t)}</option>`).join("");
+const addD=(d,n)=>new Date(Date.parse(d+"T00:00:00Z")+n*864e5).toISOString().slice(0,10);
+const PR=[["ทั้งหมด",0],["7 วัน",7],["30 วัน",30],["90 วัน",90]];
+const presets=()=>PR.map(([t,n])=>{const f=addD(st.hi,-(n-1)),from=n?(f<st.lo?st.lo:f):st.lo,on=st.f.from==from&&st.f.to==st.hi;return `<button data-p="${n}" class="${on?"on":""}" style="padding:5px 12px">${t}</button>`}).join("");
+function bar(){
+ return `<div class="card filters">`+(st.sites.length>1?`<label>จุดเก็บตัวอย่าง<select id="fs">${opts([["","ทุกจุด"]].concat(st.sites.map(s=>[s,s])),st.f.site)}</select></label>`:"")+
+ `<div style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)">ช่วงเวลา (นับจากวันล่าสุดในไฟล์)<div class="tabs" style="margin:0">${presets()}</div></div><label>หรือเลือกเอง ตั้งแต่วันที่<input type="date" id="ff" value="${st.f.from}" min="${st.lo}" max="${st.hi}"></label><label>ถึงวันที่<input type="date" id="ft" value="${st.f.to}" min="${st.lo}" max="${st.hi}"></label><label>มาตรฐานอ้างอิง<select id="fd">${opts(Object.keys(S).map(k=>[k,S[k].n]),st.std)}</select></label></div>`;
+}
+function bindBar(r){
+ const b=(id,fn)=>{const e=$(id);if(e)e.onchange=()=>{fn(e.value);if(st.f.from>st.f.to){const t=st.f.from;st.f.from=st.f.to;st.f.to=t}V[r]()}};
+ document.querySelectorAll("[data-p]").forEach(x=>x.onclick=()=>{const n=+x.dataset.p,f=addD(st.hi,-(n-1));st.f.to=st.hi;st.f.from=n?(f<st.lo?st.lo:f):st.lo;V[r]()});b("#fs",v=>st.f.site=v);b("#ff",v=>{if(v)st.f.from=v});b("#ft",v=>{if(v)st.f.to=v});b("#fd",v=>st.std=v);
+}
+const V={};
+V.upload=()=>{
+ app.innerHTML=title("นำเข้าไฟล์ค่าน้ำ","อัปโหลดไฟล์ CSV ที่เก็บค่าคุณภาพน้ำ ไม่ว่าจะเก็บมาครบหรือมีแค่บางค่า เช่น DO อย่างเดียว ระบบจะให้คุณจับคู่คอลัมน์เข้ากับเทมเพลตของเราในขั้นต่อไป")+
+ '<label class="drop" id="dz"><div class="big" style="font-size:21px">ลากไฟล์มาวางที่นี่ หรือกดเพื่อเลือกไฟล์</div><div class="mut" style="margin-top:6px">รองรับ .csv และไฟล์ที่คลีนแล้วตามเทมเพลตของเรา (ไฟล์ Excel ให้บันทึกเป็น CSV ก่อน)</div><input type="file" id="fi" accept=".csv,.txt" hidden></label>'+
+ '<div class="foot"><button class="ghost" id="smp">ลองใช้ข้อมูลตัวอย่าง</button><button class="ghost" id="tpl">ดาวน์โหลดเทมเพลต CSV</button><span class="mut">ข้อมูลประมวลผลในเบราว์เซอร์ของคุณเท่านั้น</span></div>'+
+ '<div class="card wrap" style="margin-top:20px"><b>เทมเพลตของเรา</b><span class="mut"> ชื่อข้อมูล, วันที่ (วัน/เดือน/ปี) แล้วตามด้วยค่าพารามิเตอร์ ใส่เฉพาะที่มีก็ได้</span><table style="margin-top:8px"><tr><th>ชื่อข้อมูล</th><th>วันที่</th>'+K.map(k=>`<th>${k}</th>`).join("")+'</tr><tr><td>สถานีสำแล</td><td>19/11/2026 12:00</td><td>7.4</td><td>3.6</td><td>850</td><td colspan="9" class="mut">…</td></tr></table></div>';
+ const load=f=>{const r=new FileReader();r.onload=()=>{const b=r.result;let t=new TextDecoder("utf-8").decode(b);
+  if(t.indexOf("\uFFFD")>=0){try{t=new TextDecoder("windows-874").decode(b)}catch(e){}}
+  const tb=parseTable(t);if(!tb||!tb.rows.length){alert("ไม่พบข้อมูลในไฟล์นี้");return}
+  st.tbl=tb;st.fn=f.name;st.map=auto(tb.head);st.rows=null;if(st.map.date>=0&&K.some(k=>st.map[k]>=0)){runClean();go("clean")}else go("map")};r.readAsArrayBuffer(f)};
+ $("#fi").onchange=e=>{if(e.target.files[0])load(e.target.files[0])};
+ const dz=$("#dz");dz.ondragover=e=>e.preventDefault();dz.ondrop=e=>{e.preventDefault();if(e.dataTransfer.files[0])load(e.dataTransfer.files[0])};
+ $("#smp").onclick=()=>{
+  let s=7;const R=()=>(s=(s*9301+49297)%233280)/233280,rows=[],d0=Date.UTC(2026,4,1);
+  for(let i=0;i<60;i++){const dt=new Date(d0+i*864e5).toISOString().slice(0,10);
+   ["สถานีสำแล","สถานีท่าจีน"].forEach((site,j)=>{
+    const f=1+j*.2+Math.sin(i/8)*.15,row=[site,dt+" 12:00",(6.4+R()*2.2).toFixed(2),(3.2+R()*3.4-j*.5).toFixed(2),(700+R()*1700*f).toFixed(0),(1.2+R()*2.4*f).toFixed(1),(25+R()*60*f).toFixed(0),(10+R()*50*f).toFixed(0),(400+R()*900).toFixed(0)];
+    rows.push(row);if(R()<.07)rows.push(row.slice())});
+   rows.push(["",dt+" 12:00","","","","","","",""])}
+  st.tbl={head:["ชื่อข้อมูล","วันที่","pH","DO","EC","BOD","COD","TSS","TDS"],rows,dl:","};st.fn="ข้อมูลตัวอย่าง";st.map=auto(st.tbl.head);runClean();go("clean")};
+ $("#tpl").onclick=()=>save("template-aquacheck.csv","ชื่อข้อมูล,วันที่,"+K.join(",")+"\nสถานีตัวอย่าง,19/11/2026 12:00,7.4,3.6,850,,,,,,,,\n");
+};
+V.map=()=>{
+ const T=st.tbl,M=st.map;
+ const fields=[["date","วันที่ (คอลัมน์วันที่-เวลารวมกันได้)"]].concat(M.time>=0?[["time","เวลา (คอลัมน์แยก)"]]:[],[["site","ชื่อข้อมูล / สถานี"]]).concat(K.map(k=>[k,`${P[k].n} (${k}${P[k].u?", "+P[k].u:""})`]));
+ app.innerHTML=title("จับคู่คอลัมน์เข้ากับเทมเพลต",`ไฟล์ ${esc(st.fn)}: ${T.rows.length.toLocaleString()} แถว ${T.head.length} คอลัมน์ ระบบเดาให้แล้ว ตรวจและแก้ได้ ค่าที่ไม่มีในไฟล์ให้เลือก “ไม่มีในไฟล์”`)+
+ '<div class="row c2" style="align-items:start"><div class="card" id="mp"></div><div class="card wrap"><b>ตัวอย่างข้อมูลดิบ 5 แถวแรก</b><table style="margin-top:8px"><tr>'+T.head.map(h=>`<th>${esc(h)}</th>`).join("")+'</tr>'+T.rows.slice(0,5).map(r=>'<tr>'+T.head.map((h,i)=>`<td>${esc(r[i]||"")}</td>`).join("")+'</tr>').join("")+'</table></div></div>'+
+ '<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="dd" '+(st.dedupe?"checked":"")+' style="accent-color:var(--ac)">ลบแถวที่ซ้ำกัน (จุดเก็บ เวลา และค่าเหมือนกันทุกช่อง)</label><div class="foot"><button id="go">คลีนข้อมูล</button><span class="err" id="er"></span></div>';
+ $("#mp").innerHTML=fields.map(([f,t])=>`<div class="mrow"><span>${t}</span><select data-f="${f}"><option value="-1">— ไม่มีในไฟล์ —</option>${T.head.map((h,i)=>`<option value="${i}"${M[f]==i?" selected":""}>${esc(h||"(ไม่มีชื่อ)")}</option>`).join("")}</select></div>`).join("");
+ document.querySelectorAll("#mp select").forEach(s=>s.onchange=()=>{M[s.dataset.f]=+s.value});
+ $("#dd").onchange=e=>{st.dedupe=e.target.checked};
+ $("#go").onclick=()=>{
+  if(!(M.date>=0)){$("#er").textContent="กรุณาเลือกคอลัมน์วันที่";return}
+  if(!K.some(k=>M[k]>=0)){$("#er").textContent="กรุณาจับคู่ค่าพารามิเตอร์อย่างน้อย 1 ค่า";return}
+  runClean();go("clean")};
+};
+const mapTxt=()=>{const M=st.map,h=st.tbl.head,a=[];if(M.date>=0)a.push(`${h[M.date]} → วันที่`);if(M.site>=0)a.push(`${h[M.site]} → ชื่อข้อมูล`);K.forEach(k=>{if(M[k]>=0)a.push(h[M[k]]===k?k:`${h[M[k]]} → ${k}`)});return esc(a.join(", "))};
+V.clean=()=>{
+ const r=st.rep,it=(l,v,w)=>`<div class="card"><div class="mut">${l}</div><div class="big" style="color:${w&&v>0?"var(--warn)":"var(--ink)"}">${v.toLocaleString()}</div></div>`;
+ const any=st.rows.some(o=>o.t!="00:00"),cols=st.avail;
+ app.innerHTML=title("ผลการคลีนข้อมูล",`ไฟล์ ${esc(st.fn)}: ลบแถวซ้ำและแถวที่ใช้ไม่ได้ออก แล้วจัดเป็นรูปแบบเทมเพลตของเรา<br>จับคู่ให้แล้ว: ${mapTxt()}`)+
+ `<div class="row c4">${it("แถวทั้งหมดในไฟล์",r.total)}${it("แถวซ้ำที่ลบออก",r.dup,1)}${it("วันที่อ่านไม่ได้ / แถวไม่มีค่า",r.badDate+r.empty,1)}${it("ค่าติดลบที่ล้างเป็นค่าว่าง",r.neg,1)}</div>`+
+ (r.kept?`<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>ข้อมูลที่ใช้ต่อ ${r.kept.toLocaleString()} แถว</b><span class="mut">คงไว้ ${fmt(r.kept/r.total*100,0)}% · ช่วง ${dmy(st.lo)} ถึง ${dmy(st.hi)}</span></div><div class="bar"><i style="width:${r.kept/r.total*100}%;background:var(--ok)"></i></div></div>
+ <div class="card wrap" style="margin-top:16px"><b>ไฟล์ที่คลีนแล้ว (10 แถวแรก)</b><table style="margin-top:8px"><tr><th>ชื่อข้อมูล</th><th>วันที่</th>${cols.map(k=>`<th>${k}</th>`).join("")}</tr>${st.rows.slice(0,10).map(o=>`<tr><td>${esc(o.site)}</td><td>${dmy(o.d)}${any?" "+o.t:""}</td>${cols.map(k=>`<td>${fmt(o[k],k=="pH"?2:1)}</td>`).join("")}</tr>`).join("")}</table></div>
+ <div class="foot"><button id="nx">เลือกมาตรฐานอ้างอิง</button><button class="ghost" id="dl">ดาวน์โหลดไฟล์ที่คลีนแล้ว (CSV)</button><button class="ghost" id="bk">แก้การจับคู่คอลัมน์</button></div>`
+ :`<div class="alert"><b>ไม่พบแถวที่ใช้ได้</b><div>ส่วนใหญ่เกิดจากเลือกคอลัมน์วันที่ผิด หรือรูปแบบวันที่ที่อ่านไม่ได้ (รองรับ 2026-11-19, 19/11/2026, 1 ม.ค. 2566 และปี พ.ศ.) กลับไปตรวจการจับคู่คอลัมน์อีกครั้ง</div></div><div class="foot"><button id="bk">แก้การจับคู่คอลัมน์</button></div>`);
+ $("#bk").onclick=()=>go("map");
+ if(r.kept){$("#nx").onclick=()=>go("standard");
+  $("#dl").onclick=()=>save("cleaned-"+st.fn.replace(/\.[^.]+$/,"")+".csv","ชื่อข้อมูล,วันที่,"+cols.join(",")+"\n"+st.rows.map(o=>[csvq(o.site),dmy(o.d)+(any?" "+o.t:"")].concat(cols.map(k=>o[k]==null?"":o[k])).join(",")).join("\n"))}
+};
+V.standard=()=>{
+ app.innerHTML=title("เลือกมาตรฐานอ้างอิง","เลือกมาตรฐานที่ต้องการใช้เทียบค่า แดชบอร์ดทุกหน้าจะคำนวณตามมาตรฐานนี้ และเปลี่ยนได้ทุกเมื่อ")+'<div class="row c2" style="align-items:start"><div id="sl"></div><div class="card wrap" id="pv"></div></div><div class="foot"><button id="go">ดูแดชบอร์ด</button></div>';
+ const draw=()=>{
+  $("#sl").innerHTML=Object.keys(S).map(k=>`<label class="std${k==st.std?" sel":""}"><input type="radio" name="s" value="${k}"${k==st.std?" checked":""}><span><b>${S[k].n}</b><br><span class="mut">${S[k].d}</span></span></label>`).join("");
+  const c=st.std=="cus";
+  $("#pv").innerHTML=`<b>ค่าเกณฑ์ที่ใช้</b> <span class="mut">${c?"แก้ไขได้":"เฉพาะพารามิเตอร์ที่อยู่ในไฟล์ของคุณ"}</span><table style="margin-top:8px"><tr><th>พารามิเตอร์</th><th>${c?"ต่ำสุด":"เกณฑ์"}</th>${c?"<th>สูงสุด</th>":""}</tr>`+st.avail.map(k=>{const l=S[st.std].L[k]||[null,null];
+   return `<tr><td><b>${k}</b> <span class="mut">${P[k].n} ${P[k].u}</span></td>`+(c?`<td><input type="number" step="any" data-k="${k}" data-i="0" value="${l[0]==null?"":l[0]}" style="width:90px"></td><td><input type="number" step="any" data-k="${k}" data-i="1" value="${l[1]==null?"":l[1]}" style="width:90px"></td>`:`<td>${limTxt(k)}</td>`)+"</tr>"}).join("")+`</table><p class="mut" style="margin:10px 0 0">ค่าเกณฑ์สำเร็จรูปเป็นตัวอย่างสาธิต โปรดตรวจกับประกาศล่าสุดก่อนใช้รายงานจริง</p>`;
+  document.querySelectorAll("input[name=s]").forEach(i=>i.onchange=()=>{st.std=i.value;draw()});
+  document.querySelectorAll("#pv input").forEach(i=>i.onchange=()=>{const l=S.cus.L[i.dataset.k]||(S.cus.L[i.dataset.k]=[null,null]);l[+i.dataset.i]=i.value===""?null:+i.value});
+ };
+ draw();$("#go").onclick=()=>go("overview");
+};
+V.overview=()=>{
+ const rows=view(),items=st.avail.map(k=>({k,s:stats(k,rows),a:alerts(k,rows)})).filter(x=>x.s),bad=items.filter(x=>x.a.length);
+ app.innerHTML=title("ภาพรวมคุณภาพน้ำ","สรุปแต่ละพารามิเตอร์เทียบกับ "+S[st.std].n)+bar()+
+ (bad.length?`<div class="alert"><b>แจ้งเตือน: พบค่าเกินเกณฑ์ ${bad.length} พารามิเตอร์</b><div>${bad.map(x=>`${x.k} เกิน ${x.a.length} วัน`).join(", ")}</div><div class="foot" style="margin-top:8px"><button id="gt">ดูวันที่เกินเกณฑ์</button></div></div>`:items.some(x=>lim(x.k))?'<div class="alert okk"><b>ไม่พบค่าเกินเกณฑ์ในช่วงที่เลือก</b></div>':'<div class="alert"><b>มาตรฐานนี้ไม่มีเกณฑ์สำหรับพารามิเตอร์ในไฟล์</b><div>เลือกมาตรฐานอื่น หรือใช้ “กำหนดเกณฑ์เอง” ได้ที่หน้าเลือกมาตรฐาน</div></div>')+
+ `<div class="row c4"><div class="card"><div class="mut">จำนวนผลตรวจ</div><div class="big">${rows.length.toLocaleString()}</div></div><div class="card"><div class="mut">ช่วงวันที่</div><div style="font-weight:600;margin-top:6px">${dmy(st.f.from)}<br>ถึง ${dmy(st.f.to)}</div></div><div class="card"><div class="mut">พารามิเตอร์ในไฟล์</div><div class="big">${st.avail.length}</div></div><div class="card"><div class="mut">เกินเกณฑ์</div><div class="big" style="color:${bad.length?"var(--bad)":"var(--ok)"}">${bad.length}</div></div></div>`+
+ `<div class="row c3">${items.map(x=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>${x.k}</b>${pill(x.k,x.s)}</div><div class="mut">${P[x.k].n}</div><div style="display:flex;align-items:baseline;gap:8px;margin:8px 0 4px;flex-wrap:wrap"><span class="big" style="font-size:25px">${fmt(x.s.mean,x.k=="pH"?2:1)}</span><span class="mut">${P[x.k].u} เฉลี่ย, เกณฑ์ ${limTxt(x.k)}</span></div>${chart(series(x.k,rows,true),x.k,300,60,true)}</div>`).join("")}</div>`;
+ bindBar("overview");const g=$("#gt");if(g)g.onclick=()=>{st.pm=bad[0].k;go("trends")};
+};
+V.trends=()=>{
+ const rows=view(),k=st.pm,s=stats(k,rows),a=alerts(k,rows),multi=st.sites.length>1&&!st.f.site;
+ app.innerHTML=title("แนวโน้มและแจ้งเตือน","เลือกพารามิเตอร์และช่วงวันที่ เส้นประสีแดงคือค่าเกณฑ์ จุดแดงคือช่วงที่เกินเกณฑ์")+bar()+
+ '<div class="tabs" id="pt">'+st.avail.map(x=>{const n=alerts(x,rows).length;return `<button data-k="${x}" class="${x==k?"on":""}">${x}${n?`<b>●</b>`:""}</button>`}).join("")+'</div>'+
+ `<div class="card"><b>${k} ${P[k].n}</b> <span class="mut">${P[k].u} ${series(k,rows).length&&rows.filter(o=>o[k]!=null).length>800?"· แสดงค่าเฉลี่ยรายวัน":""}</span>${chart(series(k,rows),k,900,320)}</div>`+
+ (s?`<div class="row c4" style="margin-top:16px"><div class="card"><div class="mut">ค่าเฉลี่ย</div><div class="big">${fmt(s.mean,2)}</div></div><div class="card"><div class="mut">ต่ำสุด</div><div class="big">${fmt(s.min,2)}</div></div><div class="card"><div class="mut">สูงสุด</div><div class="big">${fmt(s.max,2)}</div></div><div class="card"><div class="mut">ค่าเกณฑ์</div><div class="big" style="font-size:24px">${limTxt(k)}</div></div></div>`:"")+
+ (!lim(k)?`<div class="alert"><b>มาตรฐานนี้ไม่มีเกณฑ์ของ ${k}</b><div>เลือกมาตรฐานอื่น หรือกำหนดเกณฑ์เองที่หน้าเลือกมาตรฐาน</div></div>`:
+ a.length?`<div class="alert"><b>แจ้งเตือน: ${k} เกินเกณฑ์ใน ${a.length} วัน (${s.ex} ครั้งจาก ${s.n})</b><div class="alist"><table><tr><th>วันที่</th><th>จำนวนครั้งที่เกิน</th><th>ค่าที่เกินมากที่สุด</th>${multi?"<th>จุดเก็บ</th>":""}</tr>${a.map(x=>`<tr><td>${dmy(x.d)}</td><td>${x.n}</td><td>${fmt(x.w,2)} ${P[k].u}</td>${multi?`<td>${esc(Object.keys(x.sites).join(", "))}</td>`:""}</tr>`).join("")}</table></div></div>`:
+ '<div class="alert okk"><b>ไม่พบค่าเกินเกณฑ์ในช่วงที่เลือก</b></div>');
+ bindBar("trends");document.querySelectorAll("#pt button").forEach(b=>b.onclick=()=>{st.pm=b.dataset.k;V.trends()});
+};
+V.compliance=()=>{
+ const rows=view(),items=st.avail.map(k=>({k,s:stats(k,rows)})).filter(x=>x.s);
+ app.innerHTML=title("ผลเทียบมาตรฐาน","จำนวนครั้งที่ค่าเกินเกณฑ์ของ "+S[st.std].n)+bar()+
+ `<div class="card wrap"><table><tr><th>พารามิเตอร์</th><th>ค่าเกณฑ์</th><th>เฉลี่ย</th><th>ต่ำสุด</th><th>สูงสุด</th><th>ตัวอย่าง</th><th>เกินเกณฑ์</th><th style="width:140px">สัดส่วน</th><th>สถานะ</th></tr>${items.map(({k,s})=>`<tr><td><b>${k}</b> <span class="mut">${P[k].n}</span></td><td>${limTxt(k)} ${lim(k)?P[k].u:""}</td><td>${fmt(s.mean,2)}</td><td>${fmt(s.min,2)}</td><td>${fmt(s.max,2)}</td><td>${s.n.toLocaleString()}</td><td>${lim(k)?s.ex.toLocaleString():"–"}</td><td><div class="bar"><i style="width:${Math.min(100,s.pct)}%;background:${s.pct>=5?"var(--bad)":"var(--warn)"}"></i></div></td><td>${pill(k,s)}</td></tr>`).join("")}</table></div>`+
+ (st.sites.length>1?`<div class="card wrap" style="margin-top:16px"><b>ค่าเฉลี่ยแยกตามจุดเก็บ</b> <span class="mut">สีแดงคือเกินเกณฑ์</span><table style="margin-top:8px"><tr><th>จุดเก็บ</th>${st.avail.map(k=>`<th>${k}</th>`).join("")}</tr>${st.sites.map(si=>{const rs=rows.filter(o=>o.site==si);return `<tr><td>${esc(si)}</td>${st.avail.map(k=>{const t=stats(k,rs);return `<td style="${t&&evalP(k,t.mean)===false?"color:var(--bad);font-weight:600":""}">${t?fmt(t.mean,2):"–"}</td>`}).join("")}</tr>`}).join("")}</table></div>`:"")+
+ '<div class="foot"><button class="ghost" id="pr">พิมพ์ / บันทึกเป็น PDF</button><button class="ghost" id="cs">ดาวน์โหลดสรุป (CSV)</button></div>';
+ bindBar("compliance");$("#pr").onclick=()=>window.print();
+ $("#cs").onclick=()=>save("compliance-summary.csv","พารามิเตอร์,ค่าเกณฑ์,เฉลี่ย,ต่ำสุด,สูงสุด,ตัวอย่าง,เกินเกณฑ์,สัดส่วนเกิน(%)\n"+items.map(({k,s})=>[k,csvq(limTxt(k)),fmt(s.mean,2),fmt(s.min,2),fmt(s.max,2),s.n,s.ex,fmt(s.pct,1)].join(",")).join("\n"));
+};
+const ready=r=>r=="upload"||(r=="map"?!!st.tbl:r=="clean"?!!st.rows:!!(st.rows&&st.rows.length));
+function go(r){if(location.hash.slice(1)==r)render();else location.hash=r}
+function render(){
+ let r=location.hash.slice(1);if(!V[r])r="upload";
+ if(!ready(r))r=st.tbl?"map":"upload";
+ document.querySelectorAll("aside a").forEach(a=>{a.classList.toggle("on",a.dataset.r==r);a.classList.toggle("dis",!ready(a.dataset.r))});
+ try{V[r]();window.scrollTo(0,0)}catch(e){app.innerHTML='<div class="alert"><b>แสดงหน้านี้ไม่สำเร็จ</b><div>'+esc(e.message)+'</div><div class="foot"><button id="rs">กลับไปหน้านำเข้าไฟล์</button></div></div>';$("#rs").onclick=()=>go("upload")}
+}
+window.addEventListener("hashchange",render);
+$("#theme").onclick=()=>{const d=document.documentElement,dark=getComputedStyle(d).getPropertyValue("--bg").trim()=="#0d1a21";d.setAttribute("data-theme",dark?"light":"dark")};
+render();
+</script>
+</body>
+</html>
